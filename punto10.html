@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Punto 10</title>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background-image: url("fondo.jpg");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            font-family: Arial, sans-serif;
+            color: #fff;
+            padding: 20px;
+        }
+
+        h1 {
+            max-width: 700px;
+            background: rgba(0, 0, 0, 0.35);
+            padding: 20px 25px;
+            border-radius: 15px;
+            line-height: 1.5;
+            position: relative;
+            z-index: 2;
+        }
+
+        body {
+            position: relative;
+        }
+
+        .floating-flower {
+            position: fixed;
+            z-index: 1;
+            pointer-events: none;
+            user-select: none;
+            opacity: 0.8;
+            filter: drop-shadow(0 0 8px rgba(255,255,255,0.35));
+            animation: sway 5s ease-in-out infinite alternate;
+        }
+
+        .mute-btn {
+            position: fixed;
+            top: 18px;
+            right: 18px;
+            z-index: 3;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            border-radius: 999px;
+            padding: 10px 14px;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14);
+            font-size: 18px;
+        }
+
+        @keyframes sway {
+            from {
+                transform: rotate(-10deg) translateY(0);
+            }
+            to {
+                transform: rotate(10deg) translateY(-10px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>feli primavera ♡</h1>
+    <button id="muteBtn" class="mute-btn" type="button" aria-label="Silenciar canción">🔊</button>
+
+    <audio id="bgAudio" src="cancion.mp3" autoplay></audio>
+
+    <script>
+        const pngImages = ["flores.png", "lirios_1.png", "lirios_2.png"];
+        const flowerCount = 8;
+        const audio = document.getElementById("bgAudio");
+        const muteBtn = document.getElementById("muteBtn");
+
+        for (let i = 0; i < flowerCount; i++) {
+            const img = document.createElement("img");
+            img.src = pngImages[Math.floor(Math.random() * pngImages.length)];
+            img.className = "floating-flower";
+
+            const size = 45 + Math.random() * 90;
+            img.style.width = `${size}px`;
+            img.style.height = "auto";
+            img.style.left = `${Math.random() * 90}%`;
+            img.style.top = `${Math.random() * 80}%`;
+            img.style.opacity = (0.45 + Math.random() * 0.4).toFixed(2);
+            img.style.transform = `rotate(${Math.random() * 360}deg)`;
+
+            document.body.appendChild(img);
+        }
+
+        audio.volume = 0.45;
+        const musicEndedKey = "music-ended";
+        const musicTimeKey = "music-current-time";
+
+        if (localStorage.getItem(musicEndedKey) === "true") {
+            audio.pause();
+            audio.currentTime = 0;
+            muteBtn.textContent = "🔇";
+        } else {
+            const savedTime = Number(localStorage.getItem(musicTimeKey) || 0);
+            if (!Number.isNaN(savedTime) && savedTime > 0 && savedTime < (audio.duration || Number.MAX_SAFE_INTEGER)) {
+                audio.currentTime = savedTime;
+            }
+            audio.play().catch(() => {});
+        }
+
+        const saveAudioState = () => {
+            localStorage.setItem(musicTimeKey, String(audio.currentTime));
+        };
+
+        audio.addEventListener("timeupdate", saveAudioState);
+        audio.addEventListener("pause", saveAudioState);
+        audio.addEventListener("ended", () => {
+            audio.pause();
+            audio.currentTime = 0;
+            localStorage.setItem(musicEndedKey, "true");
+            localStorage.setItem(musicTimeKey, "0");
+            muteBtn.textContent = "🔇";
+        });
+
+        muteBtn.addEventListener("click", () => {
+            audio.muted = !audio.muted;
+            muteBtn.textContent = audio.muted ? "🔇" : "🔊";
+        });
+    </script>
+</body>
+</html>
